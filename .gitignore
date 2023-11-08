@@ -1,0 +1,6 @@
+# macOS
+.DS_Store
+.localized
+
+# Dataset
+dataset/

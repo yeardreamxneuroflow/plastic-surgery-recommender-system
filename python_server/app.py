@@ -12,7 +12,7 @@ def index() -> str:
 
 
 def compose_images(input_img: bytes, wannabe_img: bytes) -> bytes:
-    return bytes(b'output_img')
+    return input_img  # Temporary return value
 
 
 @app.route('/recommend', methods=['POST'])

@@ -9,3 +9,6 @@ non_wannabe_images/
 
 # Model
 models/
+
+# Python
+__pycache__/

@@ -1,0 +1,10 @@
+
+debug: false
+#management.endpoints.web.exposure.include: "*"
+
+logging:
+  level:
+    Neuroflow.project: debug
+    org.springframework.web.servlet: debug
+    org.hibernate.type.descriptor.sql.BasicBinder: trace
+    org.springframework.security: debug

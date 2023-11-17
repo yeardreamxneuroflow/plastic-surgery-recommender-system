@@ -43,11 +43,4 @@ public class TestController {
         return "/image";
     }
 
-//    @GetMapping("imageTest")
-//    public @ResponseBody byte[] getImage() throws IOException{
-//
-//        InputStream in = getClass()
-//                .getResourceAsStream("img/testImg.jpg");
-//        return IOUtils.toByteArray(in);
-//    }
 }

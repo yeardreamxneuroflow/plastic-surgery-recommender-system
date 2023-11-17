@@ -46,16 +46,4 @@ public class WebClientTest {
                 .block();
     }
 
-    public ClientResponse verification2(byte[] file){
-
-        webClient = WebClient.create("http://13.209.213.35:5000");
-
-        return webClient.post()
-                .uri("/recommend")
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(BodyInserters.fromMultipartData("img_file", file))
-                .exchange()
-                .block();
-    }
-
 }

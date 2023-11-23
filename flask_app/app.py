@@ -3,7 +3,7 @@ import io
 from werkzeug.datastructures.file_storage import FileStorage
 from flask import Flask, Response, request, send_file
 
-from PIL import Image
+import PIL
 
 from face_landmark import get_face_landmark_imgs
 from image_vectorization import vectorize_img
@@ -22,7 +22,7 @@ def index() -> str:
 @app.route('/recommend', methods=['POST'])
 def handle_request() -> Response:
     input_img: FileStorage = request.files['img_file']
-    face_landmark_imgs: list[Image] = get_face_landmark_imgs(input_img)
+    face_landmark_imgs: list[PIL.Image] = get_face_landmark_imgs(input_img)
     vectorized_landmakrs = vectorize_img(face_landmark_imgs)
     most_similar_wannabe_img = get_most_similar_wannabe_img(
         vectorized_landmakrs

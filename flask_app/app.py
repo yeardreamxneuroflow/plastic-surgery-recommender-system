@@ -6,7 +6,7 @@ from flask import Flask, Response, request, send_file
 import PIL
 
 from face_landmark import get_face_landmark_imgs
-from image_vectorization import vectorize_img
+from image_vectorization import vectorize_imgs
 from wannabe_image import get_most_similar_wannabe_img
 from image_generation import generate_image
 
@@ -23,7 +23,7 @@ def index() -> str:
 def handle_request() -> Response:
     input_img: FileStorage = request.files['img_file']
     face_landmark_imgs: list[PIL.Image] = get_face_landmark_imgs(input_img)
-    vectorized_landmakrs = vectorize_img(face_landmark_imgs)
+    vectorized_landmarks = vectorize_imgs(face_landmark_imgs)
     most_similar_wannabe_img = get_most_similar_wannabe_img(
         vectorized_landmakrs
     )

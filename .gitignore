@@ -4,3 +4,11 @@
 
 # Dataset
 dataset/
+wannabe_images/
+non_wannabe_images/
+
+# Pre-trained Models
+tasks/
+
+# Python
+__pycache__/

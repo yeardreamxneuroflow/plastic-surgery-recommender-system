@@ -17,13 +17,13 @@
             ]
         },
         {
-            "name": "Flask Application",
+            "name": "Run Flask Application",
             "type": "python",
             "request": "launch",
             "module": "flask",
             "env": {
                 "FLASK_APP": "app.py",
-                "FLASK_DEBUG": "1"
+                "FLASK_DEBUG": "1",
             },
             "args": [
                 "run",

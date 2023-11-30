@@ -3,7 +3,10 @@ package Neuroflow.project.controller;
 import Neuroflow.project.service.WebClientService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -11,21 +14,21 @@ import java.sql.SQLException;
 import java.util.Base64;
 
 @Controller
-@RequestMapping("test")
-public class TestController {
+@RequestMapping("service")
+public class InputController {
 
     private final WebClientService webClientService;
 
-    public TestController(WebClientService webClientService) {
+    public InputController(WebClientService webClientService) {
         this.webClientService = webClientService;
     }
 
-    @GetMapping("/form")
+    @GetMapping("/photo")
     public String getForm(){
-        return "/testTemplate";
+        return "/projects";
     }
 
-    @PostMapping("/input")
+    @PostMapping("/photo")
     public String sendPost(final Model model, @RequestParam("image") MultipartFile multipartFile) throws IOException, SQLException {
 
         byte[] imageData = webClientService.verification(multipartFile);
@@ -35,7 +38,7 @@ public class TestController {
 
         model.addAttribute("image_file", base64ImageData);
 
-        return "/image";
+        return "/image_output";
     }
 
 }

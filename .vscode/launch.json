@@ -5,18 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Wannabe Image Scraping",
-            "type": "python",
-            "request": "launch",
-            "module": "scrapy",
-            "args": [
-                "runspider",
-                "${file}",
-                "-o",
-                "./wannabe_crawler/quotes.jsonl",
-            ]
-        },
-        {
             "name": "Run Flask Application",
             "type": "python",
             "request": "launch",

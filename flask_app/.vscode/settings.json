@@ -1,7 +1,0 @@
-{
-    "editor.defaultFormatter": "ms-python.autopep8",
-    "editor.formatOnSave": true,
-    "notebook.formatOnSave.enabled": true,
-    "pylint.importStrategy": "useBundled",
-    "python.languageServer": "Pylance"
-}

@@ -25,7 +25,7 @@ def handle_request() -> Response:
     face_landmark_imgs: list[PIL.Image] = get_face_landmark_imgs(input_img)
     vectorized_landmarks = vectorize_imgs(face_landmark_imgs)
     most_similar_wannabe_img = get_most_similar_wannabe_img(
-        vectorized_landmakrs
+        vectorized_landmarks
     )
     output_img = generate_image(input_img, most_similar_wannabe_img)
 

@@ -18,6 +18,15 @@
                 "--host=0.0.0.0",
             ],
             "jinja": true,
-        }
-    ]
+        },
+        {
+            "name": "Run Wannabe Image Scraping",
+            "type": "python",
+            "request": "launch",
+            "module": "scrapy",
+            "args": [
+                "crawl",
+            ],
+        },
+    ],
 }

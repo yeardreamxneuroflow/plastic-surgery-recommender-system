@@ -12,3 +12,8 @@ tasks/
 
 # Python
 __pycache__/
+
+# Images
+img/
+*.jpg
+*.png

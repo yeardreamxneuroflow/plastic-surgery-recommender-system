@@ -1,7 +1,7 @@
 # Docker Engine Setup
-> Setup Docker environment to run Vector Database `mqrao`
+> Setup Docker environment to run `marqo`
 
-# How to Setup Docker Environmnet
+# How To Setup?
 ```bash
 bash ./docker-engine-setup/run.sh
 ```

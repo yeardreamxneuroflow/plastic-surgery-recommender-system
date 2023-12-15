@@ -1,3 +1,6 @@
+import os
+
+
 # Scrapy settings for wannabe_image_scraper project
 #
 # For simplicity, this file contains only settings considered important or
@@ -63,7 +66,7 @@ ROBOTSTXT_OBEY = False
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 # ITEM_PIPELINES = {
-#    "wannabe_image_scraper.pipelines.WannabeImageScraperPipeline": 300,
+#     "scrapy.pipelines.images.ImagesPipeline": 300,
 # }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -86,6 +89,10 @@ ROBOTSTXT_OBEY = False
 # HTTPCACHE_DIR = "httpcache"
 # HTTPCACHE_IGNORE_HTTP_CODES = []
 # HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
+
+# AWS S3
+AWS_ACCESS_KEY_ID = os.getenv("AKIAT2424X6ELPQIKNEF")
+AWS_SECRET_ACCESS_KEY = os.getenv("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")
 
 # Set settings whose default value is deprecated to a future-proof value
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"

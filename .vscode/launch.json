@@ -32,8 +32,11 @@
             "type": "python",
             "request": "launch",
             "module": "scrapy",
+            "cwd": "${workspaceFolder}/scraper",
             "args": [
                 "crawl",
+                // "wannabe_men",
+                "wannabe_women",
             ],
         },
     ],

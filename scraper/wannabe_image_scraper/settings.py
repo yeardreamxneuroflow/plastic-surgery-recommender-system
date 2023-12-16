@@ -91,8 +91,8 @@ ROBOTSTXT_OBEY = False
 # HTTPCACHE_STORAGE = "scrapy.extensions.httpcache.FilesystemCacheStorage"
 
 # AWS S3
-AWS_ACCESS_KEY_ID = os.getenv("AKIAT2424X6ELPQIKNEF")
-AWS_SECRET_ACCESS_KEY = os.getenv("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")
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 # Set settings whose default value is deprecated to a future-proof value
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"

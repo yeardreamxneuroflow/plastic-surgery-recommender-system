@@ -6,6 +6,7 @@ from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.components.containers.landmark import NormalizedLandmark
 
 import PIL
+
 import numpy as np
 
 import face_landmark_macro
@@ -60,7 +61,8 @@ def get_single_landmark_img(
     return copied_img_to_crop.crop((x1, y1, x2, y2))
 
 
-def get_face_landmark_imgs(input_img: FileStorage) -> list[PIL.Image]:
+# TODO: Fix `AttributeError` to Use Type Hint using `Union`
+def get_face_landmark_imgs(input_img) -> list[PIL.Image]:
     """
     Kind of face landmarks
     - Left eye
@@ -69,7 +71,11 @@ def get_face_landmark_imgs(input_img: FileStorage) -> list[PIL.Image]:
     - Lips
     """
 
-    pil_img = PIL.Image.open(input_img.stream)
+    if __name__ == "__main__":  # Manual Method Calling
+        pil_img = input_img  # `input_img`: Some type from `PIL.Image` Module
+    elif __name__ != "__main__":
+        pil_img = PIL.Image.open(input_img.stream)  # `input_img`: FileStorage
+
     detected_landmark_points = detect_landmark_points(pil_img)
 
     left_eye_img = get_single_landmark_img(
@@ -115,3 +121,24 @@ def get_face_landmark_imgs(input_img: FileStorage) -> list[PIL.Image]:
     # )
 
     return [left_eye_img, right_eye_img, nose_img, lips_img]
+
+# Manual Landmark Extraction
+if __name__ == "__main__":
+    wannabe_list = [
+        "박보검",
+        "카리나",
+    ]
+
+    for wannabe_idx, wannabe in enumerate(wannabe_list):
+        r = get_face_landmark_imgs(PIL.Image.open(f"manual_images/{wannabe}/original.jpg"))
+        for img_idx, img in enumerate(r):
+            if img_idx == 0:
+                landmark = "left-eye"
+            elif img_idx == 1:
+                landmark = "right-eye"
+            elif img_idx == 2:
+                landmark = "nose"
+            elif img_idx == 3:
+                landmark = "lips"
+
+            img.save(f"manual_images/{wannabe}/{landmark}.jpg")

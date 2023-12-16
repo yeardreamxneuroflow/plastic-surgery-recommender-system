@@ -17,6 +17,7 @@
             "type": "python",
             "request": "launch",
             "module": "flask",
+            "cwd": "${workspaceFolder}/",
             "env": {
                 "FLASK_APP": "app.py",
                 "FLASK_DEBUG": "1",

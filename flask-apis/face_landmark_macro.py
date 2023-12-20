@@ -1,3 +1,6 @@
+import os
+
+
 __all__ = [
     "LEFT_EYE_LEFT_EDGE",
     "LEFT_EYE_TOP_EDGE",
@@ -21,6 +24,15 @@ __all__ = [
     # "FACE_OVAL_BOTTOM_EDGE",
 ]
 
+# Currently defined landmarks
+DEFINED_LANDMARKS = [
+    "left-eye",
+    "right-eye",
+    "nose",
+    "lips",
+]
+
+# Indexes
 LEFT_EYE_LEFT_EDGE = 359
 LEFT_EYE_TOP_EDGE = 257
 LEFT_EYE_RIGHT_EDGE = 362
@@ -41,8 +53,15 @@ LIPS_TOP_EDGE = 267
 LIPS_RIGHT_EDGE = 291
 LIPS_BOTTOM_EDGE = 17
 
-# TODO: Set 'face oval'(얼굴윤곽) indicies
+# TODO: Set 'face oval'(얼굴윤곽) indexes
 # FACE_OVAL_LEFT_EDGE =
 # FACE_OVAL_TOP_EDGE =
 # FACE_OVAL_RIGHT_EDGE =
 # FACE_OVAL_BOTTOM_EDGE =
+
+# AWS keys to use S3
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECERT_ACCESS_KEY")
+
+assert AWS_ACCESS_KEY_ID is not None, "`AWS_ACCESS_KEY_ID` Environment Variable is `None`."
+assert AWS_SECRET_ACCESS_KEY is not None, "`AWS_SECRET_ACCESS_KEY` Environment Variable is `None`."

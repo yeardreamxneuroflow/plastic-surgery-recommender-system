@@ -1,3 +1,5 @@
+import io
+
 from werkzeug.datastructures.file_storage import FileStorage
 
 import mediapipe as mp
@@ -6,10 +8,13 @@ from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.components.containers.landmark import NormalizedLandmark
 
 import PIL
-
 import numpy as np
+import boto3
 
 import face_landmark_macro
+from aws_macro import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+# TODO: Change bucket name when scraping pipeline is made
+from aws_macro import AWS_MANUAL_WANNABE_BUCKET_NAME
 
 
 def denormalize_landmark_points(
@@ -122,15 +127,21 @@ def get_face_landmark_imgs(input_img) -> list[PIL.Image]:
 
     return [left_eye_img, right_eye_img, nose_img, lips_img]
 
-# Manual Landmark Extraction
-if __name__ == "__main__":
-    wannabe_list = [
-        "박보검",
-        "카리나",
-    ]
 
-    for wannabe_idx, wannabe in enumerate(wannabe_list):
-        r = get_face_landmark_imgs(PIL.Image.open(f"manual_images/{wannabe}/original.jpg"))
+def extract_landmarks_manually(wannabe_list: list[str]):
+    """Extract Wannabe Image's Landmarks and Store to S3 Bucket
+    """
+
+    # AWS S3 client to store extracted landmark images
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    )
+    for wannabe in wannabe_list:
+        r: list[PIL.Image] = get_face_landmark_imgs(PIL.Image.open(
+            f"manual_images/{wannabe}/original.jpg"))
+
         for img_idx, img in enumerate(r):
             if img_idx == 0:
                 landmark = "left-eye"
@@ -141,4 +152,46 @@ if __name__ == "__main__":
             elif img_idx == 3:
                 landmark = "lips"
 
-            img.save(f"manual_images/{wannabe}/{landmark}.jpg")
+            # Create BytesIO Object
+            img_obj = io.BytesIO()
+
+            # Save Image to the Object
+            img.save(img_obj, format="JPEG")
+
+            # Seek Object
+            img_obj.seek(0)
+
+            # Store image to S3 Bucket
+            s3.upload_fileobj(
+                Fileobj=img_obj,
+                Bucket=AWS_MANUAL_WANNABE_BUCKET_NAME,
+                Key=f"{wannabe}/{landmark}.jpg",
+            )
+
+
+# Manual Landmark Extraction and Store
+if __name__ == "__main__":
+    wannabe_list = [
+        "박보검",
+        "뷔",
+        "서강준",
+        "송강",
+        "송중기",
+        "신세경",
+        "아이린",
+        "아이유",
+        "오연서",
+        "윈터",
+        "육성재",
+        "윤아",
+        "이주빈",
+        "장원영",
+        "정국",
+        "정우성",
+        "제니",
+        "차은우",
+        "카리나",
+    ]
+    extract_landmarks_manually(
+        wannabe_list=wannabe_list,
+    )

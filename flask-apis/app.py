@@ -19,6 +19,14 @@ def index() -> str:
 Application API!</h1>"
 
 
+@app.route("/scrape", methods=["POST"])
+def handle_scrape_request() -> Response:
+    """Operate Scraping Pipeline
+    """
+
+    pass
+
+
 @app.route('/recommend', methods=['POST'])
 def handle_spring_request() -> Response:
     """Process User Face Image as an Input, Return Multiple Data as an Output

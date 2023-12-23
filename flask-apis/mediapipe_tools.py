@@ -1,14 +1,16 @@
-import io
-
+from typing import Union, List
 from werkzeug.datastructures.file_storage import FileStorage
+
+import io
 
 import mediapipe as mp
 from mediapipe.tasks.python import BaseOptions
 from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.components.containers.landmark import NormalizedLandmark
 
-import PIL
+from PIL import Image
 import numpy as np
+
 import boto3
 
 import face_landmark_macro
@@ -18,7 +20,7 @@ from aws_macro import AWS_MANUAL_WANNABE_BUCKET_NAME
 
 
 def denormalize_landmark_points(
-    pil_img: PIL.Image,
+    pil_img: Image.Image,
     points_to_denormalize: list[NormalizedLandmark],
 ) -> None:
     img_width, img_height = pil_img.size
@@ -29,7 +31,7 @@ def denormalize_landmark_points(
 
 
 def detect_landmark_points(
-    pil_img: PIL.Image,
+    pil_img: Image.Image,
 ) -> list[NormalizedLandmark]:
     mp_img = np.array(pil_img)
     mp_img = mp.Image(image_format=mp.ImageFormat.SRGB,
@@ -50,13 +52,13 @@ def detect_landmark_points(
 
 
 def get_single_landmark_img(
-    img: PIL.Image,
+    img: Image.Image,
     denormalized_landmark_points: list[NormalizedLandmark],
     x1_idx: int,
     y1_idx: int,
     x2_idx: int,
     y2_idx: int,
-) -> PIL.Image:
+) -> Image.Image:
     copied_img_to_crop = img.copy()
     x1: float = denormalized_landmark_points[x1_idx].x
     y1: float = denormalized_landmark_points[y1_idx].y
@@ -67,7 +69,7 @@ def get_single_landmark_img(
 
 
 # TODO: Fix `AttributeError` to Use Type Hint using `Union`
-def get_face_landmark_imgs(input_img) -> list[PIL.Image]:
+def get_face_landmark_imgs(input_img: Union[Image.Image, FileStorage]) -> list[Image.Image]:
     """
     Kind of face landmarks
     - Left eye
@@ -76,10 +78,10 @@ def get_face_landmark_imgs(input_img) -> list[PIL.Image]:
     - Lips
     """
 
-    if __name__ == "__main__":  # Manual Method Calling
-        pil_img = input_img  # `input_img`: Some type from `PIL.Image` Module
+    if __name__ == "__main__":  # Method was called manually
+        pil_img = input_img
     elif __name__ != "__main__":
-        pil_img = PIL.Image.open(input_img.stream)  # `input_img`: FileStorage
+        pil_img = Image.open(input_img.stream)
 
     detected_landmark_points = detect_landmark_points(pil_img)
 
@@ -128,7 +130,7 @@ def get_face_landmark_imgs(input_img) -> list[PIL.Image]:
     return [left_eye_img, right_eye_img, nose_img, lips_img]
 
 
-def extract_landmarks_manually(wannabe_list: list[str]):
+def extract_landmarks_manually(wannabe_list: List[str]):
     """Extract Wannabe Image's Landmarks and Store to S3 Bucket
     """
 
@@ -139,7 +141,7 @@ def extract_landmarks_manually(wannabe_list: list[str]):
         aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     )
     for wannabe in wannabe_list:
-        r: list[PIL.Image] = get_face_landmark_imgs(PIL.Image.open(
+        r: list[Image.Image] = get_face_landmark_imgs(Image.open(
             f"manual_images/{wannabe}/original.jpg"))
 
         for img_idx, img in enumerate(r):
@@ -192,6 +194,7 @@ if __name__ == "__main__":
         "차은우",
         "카리나",
     ]
+
     extract_landmarks_manually(
         wannabe_list=wannabe_list,
     )

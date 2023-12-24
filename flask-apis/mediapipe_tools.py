@@ -1,28 +1,32 @@
-from typing import Union, List
-from werkzeug.datastructures.file_storage import FileStorage
+"""Using MediaPipe to extract face landmarks.
+"""
+
 
 import io
+from typing import Union, List
+
+from werkzeug.datastructures import FileStorage
 
 import mediapipe as mp
-from mediapipe.tasks.python import BaseOptions
-from mediapipe.tasks.python import vision
+from mediapipe.tasks.python import BaseOptions, vision
 from mediapipe.tasks.python.components.containers.landmark import NormalizedLandmark
 
 from PIL import Image
 import numpy as np
-
 import boto3
 
-import face_landmark_macro
-from aws_macro import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
-# TODO: Change bucket name when scraping pipeline is made
-from aws_macro import AWS_MANUAL_WANNABE_BUCKET_NAME
+from macro import MediaPipeMacro, AWSMacro
 
 
 def denormalize_landmark_points(
     pil_img: Image.Image,
-    points_to_denormalize: list[NormalizedLandmark],
+    points_to_denormalize: List[NormalizedLandmark],
 ) -> None:
+    """Landmark points were normalized automatically.
+
+    There is a need to denormalize the points to crop landmark photo.
+    """
+
     img_width, img_height = pil_img.size
 
     for _, landmark in enumerate(points_to_denormalize):
@@ -32,7 +36,10 @@ def denormalize_landmark_points(
 
 def detect_landmark_points(
     pil_img: Image.Image,
-) -> list[NormalizedLandmark]:
+) -> List[NormalizedLandmark]:
+    """Landmark points of user image to make landmark images.
+    """
+
     mp_img = np.array(pil_img)
     mp_img = mp.Image(image_format=mp.ImageFormat.SRGB,
                       data=mp_img)
@@ -59,6 +66,9 @@ def get_single_landmark_img(
     x2_idx: int,
     y2_idx: int,
 ) -> Image.Image:
+    """Use landmark points and landmark-specific indexes to crop the landmark image.
+    """
+
     copied_img_to_crop = img.copy()
     x1: float = denormalized_landmark_points[x1_idx].x
     y1: float = denormalized_landmark_points[y1_idx].y
@@ -68,15 +78,11 @@ def get_single_landmark_img(
     return copied_img_to_crop.crop((x1, y1, x2, y2))
 
 
-# TODO: Fix `AttributeError` to Use Type Hint using `Union`
-def get_face_landmark_imgs(input_img: Union[Image.Image, FileStorage]) -> list[Image.Image]:
+def get_face_landmark_imgs(input_img: Union[Image.Image, FileStorage]) -> List[Image.Image]:
+    """Entrypoint of face landmark image extraction function.
     """
-    Kind of face landmarks
-    - Left eye
-    - Right eye
-    - Nose
-    - Lips
-    """
+
+    mp_macro = MediaPipeMacro()
 
     if __name__ == "__main__":  # Method was called manually
         pil_img = input_img
@@ -88,44 +94,35 @@ def get_face_landmark_imgs(input_img: Union[Image.Image, FileStorage]) -> list[I
     left_eye_img = get_single_landmark_img(
         pil_img,
         detected_landmark_points,
-        face_landmark_macro.LEFT_EYE_RIGHT_EDGE,
-        face_landmark_macro.LEFT_EYE_TOP_EDGE,
-        face_landmark_macro.LEFT_EYE_LEFT_EDGE,
-        face_landmark_macro.LEFT_EYE_BOTTOM_EDGE,
+        mp_macro.Index.LEFT_EYE_RIGHT_EDGE,
+        mp_macro.Index.LEFT_EYE_TOP_EDGE,
+        mp_macro.Index.LEFT_EYE_LEFT_EDGE,
+        mp_macro.Index.LEFT_EYE_BOTTOM_EDGE,
     )
     right_eye_img = get_single_landmark_img(
         pil_img,
         detected_landmark_points,
-        face_landmark_macro.RIGHT_EYE_RIGHT_EDGE,
-        face_landmark_macro.RIGHT_EYE_TOP_EDGE,
-        face_landmark_macro.RIGHT_EYE_LEFT_EDGE,
-        face_landmark_macro.RIGHT_EYE_BOTTOM_EDGE,
+        mp_macro.Index.RIGHT_EYE_RIGHT_EDGE,
+        mp_macro.Index.RIGHT_EYE_TOP_EDGE,
+        mp_macro.Index.RIGHT_EYE_LEFT_EDGE,
+        mp_macro.Index.RIGHT_EYE_BOTTOM_EDGE,
     )
     nose_img = get_single_landmark_img(
         pil_img,
         detected_landmark_points,
-        face_landmark_macro.NOSE_LEFT_EDGE,
-        face_landmark_macro.NOSE_TOP_EDGE,
-        face_landmark_macro.NOSE_RIGHT_EDGE,
-        face_landmark_macro.NOSE_BOTTOM_EDGE,
+        mp_macro.Index.NOSE_LEFT_EDGE,
+        mp_macro.Index.NOSE_TOP_EDGE,
+        mp_macro.Index.NOSE_RIGHT_EDGE,
+        mp_macro.Index.NOSE_BOTTOM_EDGE,
     )
     lips_img = get_single_landmark_img(
         pil_img,
         detected_landmark_points,
-        face_landmark_macro.LIPS_LEFT_EDGE,
-        face_landmark_macro.LIPS_TOP_EDGE,
-        face_landmark_macro.LIPS_RIGHT_EDGE,
-        face_landmark_macro.LIPS_BOTTOM_EDGE,
+        mp_macro.Index.LIPS_LEFT_EDGE,
+        mp_macro.Index.LIPS_TOP_EDGE,
+        mp_macro.Index.LIPS_RIGHT_EDGE,
+        mp_macro.Index.LIPS_BOTTOM_EDGE,
     )
-    # # Idea: Extract 'face oval'(얼굴윤곽)
-    # face_oval_img: Image = get_single_landmark_img(
-    #     pil_input_img,
-    #     result_landmarks,
-    #     face_landmark_macro.FACE_OVAL_LEFT_EDGE,
-    #     face_landmark_macro.FACE_OVAL_RIGHT_EDGE,
-    #     face_landmark_macro.FACE_OVAL_TOP_EDGE,
-    #     face_landmark_macro.FACE_OVAL_BOTTOM_EDGE,
-    # )
 
     return [left_eye_img, right_eye_img, nose_img, lips_img]
 
@@ -134,11 +131,13 @@ def extract_landmarks_manually(wannabe_list: List[str]):
     """Extract Wannabe Image's Landmarks and Store to S3 Bucket
     """
 
+    aws_macro = AWSMacro()
+
     # AWS S3 client to store extracted landmark images
     s3 = boto3.client(
         "s3",
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        aws_access_key_id=aws_macro.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=aws_macro.AWS_SECRET_ACCESS_KEY,
     )
     for wannabe in wannabe_list:
         r: list[Image.Image] = get_face_landmark_imgs(Image.open(
@@ -154,25 +153,28 @@ def extract_landmarks_manually(wannabe_list: List[str]):
             elif img_idx == 3:
                 landmark = "lips"
 
-            # Create BytesIO Object
+            # Create BytesIO object
             img_obj = io.BytesIO()
 
-            # Save Image to the Object
+            # Save image to the object
             img.save(img_obj, format="JPEG")
 
-            # Seek Object
+            # Change a stream position to start of the stream
             img_obj.seek(0)
 
             # Store image to S3 Bucket
             s3.upload_fileobj(
                 Fileobj=img_obj,
-                Bucket=AWS_MANUAL_WANNABE_BUCKET_NAME,
+                # TODO: Change bucket name when scraping pipeline is made
+                Bucket=aws_macro.AWS_MANUAL_WANNABE_BUCKET_NAME,
                 Key=f"{wannabe}/{landmark}.jpg",
             )
 
 
-# Manual Landmark Extraction and Store
 if __name__ == "__main__":
+    """Manual face landmark image extraction with storing.
+    """
+
     wannabe_list = [
         "박보검",
         "뷔",

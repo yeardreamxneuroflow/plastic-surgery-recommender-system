@@ -1,36 +1,42 @@
+"""Handling Marqo from Flask server.
+"""
+
+
 from typing import List
 
 import marqo
 import boto3
+from PIL import Image
 
-from face_landmark_macro import DEFINED_LANDMARKS
-from marqo_macro import VECTOR_DB_IP, VECTOR_DB_PORT
-from aws_macro import AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
-from aws_macro import AWS_MANUAL_WANNABE_BUCKET_NAME, S3_URL_EXPIRATION
+from macro import MarqoMacro, AWSMacro, MediaPipeMacro
 
 
 def insert_landmarks_to_marqo(wannabe_list: List[str]) -> None:
-    """Insert Extracted Landmarks from S3 Bucket to Marqo
+    """Get extracted landmarks from S3 and insert it to Marqo.
     """
 
-    mq = marqo.Client(f"http://{VECTOR_DB_IP}:{VECTOR_DB_PORT}")
+    mq_macro = MarqoMacro()
+    aws_macro = AWSMacro()
+    mp_macro = MediaPipeMacro()
+
+    mq = marqo.Client(
+        f"http://{mq_macro.VECTOR_DB_IP}:{mq_macro.VECTOR_DB_PORT}")
     s3 = boto3.client(
         "s3",
-        aws_access_key_id=AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+        aws_access_key_id=aws_macro.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=aws_macro.AWS_SECRET_ACCESS_KEY,
         region_name="ap-northeast-2",
     )
 
     for wannabe in wannabe_list:
-        for landmark in DEFINED_LANDMARKS:
-            # landmark_path = f"s3://{AWS_MANUAL_WANNABE_BUCKET_NAME}/{wannabe}/{landmark}.jpg"
+        for landmark in mp_macro.Landmark.DEFINED_LANDMARKS:
             img_url = s3.generate_presigned_url(
                 ClientMethod="get_object",
                 Params={
-                    "Bucket": AWS_MANUAL_WANNABE_BUCKET_NAME,
+                    "Bucket": aws_macro.AWS_MANUAL_WANNABE_BUCKET_NAME,
                     "Key": f"{wannabe}/{landmark}.jpg",
                 },
-                ExpiresIn=S3_URL_EXPIRATION,
+                ExpiresIn=aws_macro.S3_URL_EXPIRATION,
             )
             r = mq.index(landmark).add_documents(
                 [
@@ -41,19 +47,17 @@ def insert_landmarks_to_marqo(wannabe_list: List[str]) -> None:
                 ],
                 tensor_fields=["img"],
             )
-            r  # BP
+            r  # Breakpoint
 
 
-def infer_landmarks(face_landmark_imgs: list) -> list[str]:
-    # ret = [
-    #     [
-    #         wannabe,
-    #         score,
-    #     ],
-    #     ...
-    # ]
+def infer_landmarks(face_landmark_imgs: List[Image.Image]) -> List[str]:
+    """Get most similar wannabe landmark per each landmark.
+    """
 
-    mq = marqo.Client(f"http://{VECTOR_DB_IP}:{VECTOR_DB_PORT}")
+    mq_macro = MarqoMacro()
+
+    mq = marqo.Client(
+        f"http://{mq_macro.VECTOR_DB_IP}:{mq_macro.VECTOR_DB_PORT}")
 
     for idx, img in enumerate(face_landmark_imgs):
         if idx == 0:
@@ -66,11 +70,14 @@ def infer_landmarks(face_landmark_imgs: list) -> list[str]:
             landmark = "lips"
 
         r = mq.index(landmark).search(q=img)
-        r  # Currently blocked by for manual landmark insertion
+
+        # TODO: Process `r` and return result that processed from `r`
 
 
-# Manual Image Data Insertion
 if __name__ == "__main__":
+    """Manual image data insertion.
+    """
+
     wannabe_list = [
         "박보검",
         "뷔",
@@ -92,4 +99,5 @@ if __name__ == "__main__":
         "차은우",
         "카리나",
     ]
-    insert_landmarks_to_marqo(wannabe_list)
+
+    insert_landmarks_to_marqo(wannabe_list=wannabe_list)

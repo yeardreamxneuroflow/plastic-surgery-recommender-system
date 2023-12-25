@@ -35,11 +35,13 @@ class AWSMacro(MacroUsingEnvVar):
 
     def __init__(self):
         self.S3_URL_EXPIRATION = 10  # Seconds
+        self.DEBUG_S3_URL_EXPIRATION = 1000
         aws_env_var_list = [
             "AWS_ACCESS_KEY_ID",
             "AWS_SECRET_ACCESS_KEY",
             "AWS_WANNABE_BUCKET_NAME",
             "AWS_MANUAL_WANNABE_BUCKET_NAME",
+            "AWS_USER_LANDMARK_BUCKET_NAME",
         ]
         super().__init__(aws_env_var_list)
 

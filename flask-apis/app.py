@@ -4,17 +4,17 @@
 
 import io
 import time
-from typing import List
+import base64
 
 import boto3
-from flask import Flask, Response, request
+from flask import Flask, Response, request, jsonify
 from werkzeug.datastructures import FileStorage
 
 from PIL import Image
 
 from mediapipe_tools import get_face_landmark_imgs
 from marqo_tools import infer_landmarks
-from macro import AWSMacro
+from macro import AWSMacro, MediaPipeMacro
 
 
 app = Flask(__name__)
@@ -39,7 +39,7 @@ def handle_scrape_request() -> Response:
 
 def upload_face_landmark_imgs(
     user_timestamp: str,
-    face_landmark_imgs: List[Image.Image],
+    face_landmark_imgs: list[Image.Image],
 ) -> None:
     """Store extracted landmark images to S3 Bucket
     """
@@ -79,7 +79,7 @@ def handle_spring_request() -> Response:
 
     Returns:
         Example of data:
-        [
+        {
             "landmark_00": {
                 1. User's face landmark image
                 2. Most similar wannabe
@@ -91,19 +91,30 @@ def handle_spring_request() -> Response:
                 3. Similarity score
             },
             ...
-        ]
+        }
     """
+
+    mp_macro = MediaPipeMacro()
+    output_data = {}
 
     # Get user's face landmarks
     user_img: FileStorage = request.files["img_file"]
-    face_landmark_imgs: List[Image.Image] = get_face_landmark_imgs(user_img)
+    face_landmark_imgs: list[Image.Image] = get_face_landmark_imgs(user_img)
+
+    # Init data insertion to return value(output_data)
+    for landmark_idx, landmark_name in enumerate(mp_macro.Landmark.DEFINED_LANDMARKS):
+        # For HTTP Response
+        user_landmark_image_b64 = base64.b64encode(
+            face_landmark_imgs[landmark_idx].tobytes()).decode()
+
+        output_data[landmark_name] = {
+            "user_landmark_image": user_landmark_image_b64,
+        }
 
     # TODO: Replace user_timestamp(Unix Timestamp) to managed user ID
     user_timestamp = str(time.time())
+
     upload_face_landmark_imgs(user_timestamp, face_landmark_imgs)
+    infer_landmarks(user_timestamp, output_data)
 
-    # Searching user landmarks from marqo
-    inference_result: List[List[str, str]] = infer_landmarks(user_timestamp)
-    pass
-
-    # TODO: Return multiple data to use Flask module
+    return jsonify(output_data)

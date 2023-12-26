@@ -2,8 +2,6 @@
 """
 
 
-from typing import List
-
 import marqo
 import boto3
 from PIL import Image
@@ -11,7 +9,7 @@ from PIL import Image
 from macro import MarqoMacro, AWSMacro, MediaPipeMacro
 
 
-def insert_landmarks_to_marqo(wannabe_list: List[str]) -> None:
+def insert_landmarks_to_marqo(wannabe_list: list[str]) -> None:
     """Get extracted landmarks from S3 and insert it to Marqo.
     """
 
@@ -50,7 +48,10 @@ def insert_landmarks_to_marqo(wannabe_list: List[str]) -> None:
             r  # Breakpoint
 
 
-def infer_landmarks(user_timestamp: str) -> List[str]:
+def infer_landmarks(
+    user_timestamp: str,
+    output_data: dict[str, dict[str, Image.Image | str]],
+) -> list[dict[str, Image.Image | str]]:
     """Get most similar wannabe landmark per each landmark.
     """
 
@@ -68,8 +69,6 @@ def infer_landmarks(user_timestamp: str) -> List[str]:
         f"http://{mq_macro.VECTOR_DB_IP}:{mq_macro.VECTOR_DB_PORT}")
 
     for landmark in mp_macro.Landmark.DEFINED_LANDMARKS:
-        # TODO: DELETE REDEFINITION AFTER TEST
-        user_timestamp = "1703491543.5945203"
         landmark_img_url = s3.generate_presigned_url(
             ClientMethod="get_object",
             Params={
@@ -78,12 +77,17 @@ def infer_landmarks(user_timestamp: str) -> List[str]:
             },
             ExpiresIn=aws_macro.S3_URL_EXPIRATION,
         )
-
-        # TODO: Fix `MarqoWebError`
         r = mq.index(landmark).search(q=landmark_img_url)
-        pass
 
-        # TODO: Process `r` and return result that processed from `r`
+        # Already stored one, just for easy deveoplment
+        user_landmark_image = output_data[landmark]["user_landmark_image"]
+
+        # hits[0] == Most similar data(wannabe)
+        output_data[landmark] = {
+            "user_landmark_image": user_landmark_image,
+            "most_similar_wannabe": r["hits"][0]["wannabe_is"],
+            "score": str(r["hits"][0]["_score"]),
+        }
 
 
 if __name__ == "__main__":

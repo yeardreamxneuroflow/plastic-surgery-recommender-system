@@ -103,9 +103,13 @@ def handle_spring_request() -> Response:
 
     # Init data insertion to return value(output_data)
     for landmark_idx, landmark_name in enumerate(mp_macro.Landmark.DEFINED_LANDMARKS):
-        # For HTTP Response
-        user_landmark_image_b64 = base64.b64encode(
-            face_landmark_imgs[landmark_idx].tobytes()).decode()
+        # Base64 converting for HTTP Response
+        # Compressed image needs Image.save() to handle, not tobytes()
+        comp_img_buffer = io.BytesIO()
+        face_landmark_imgs[landmark_idx].save(comp_img_buffer, format="JPEG")
+        comp_img_buffer.seek(0)
+        bytes_img_data = comp_img_buffer.read()
+        user_landmark_image_b64 = base64.b64encode(bytes_img_data).decode()
 
         output_data[landmark_name] = {
             "user_landmark_image": user_landmark_image_b64,

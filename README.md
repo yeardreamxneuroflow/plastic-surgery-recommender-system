@@ -14,7 +14,7 @@
     - [Workflow Overview](#workflow-overview)
     - [Layers](#layers)
     - [Web UI & Web Backend Layer](#web-ui--web-backend-layer)
-- [#API Layer](#api-layer)
+- [API Layer](#api-layer)
     - [/recommend](#recommend)
     - [/scrape](#scrape)
     - [Tech Stack](#tech-stack)
